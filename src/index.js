@@ -38,36 +38,40 @@ const MORSE_TABLE = {
 };
 
 function decode(expr) {
-    const arrayOfWords = expr.split('**********')
-    console.log(arrayOfWords)
-    const preparedArray = arrayOfWords.map(word => {
-        return word.match(/.{10}/g);
+    const arrayOf10 = splitToWords(expr).map(word => {
+        return divide(word, 10)
     })
-    const aaa = preparedArray.map(word => word.map(word => {
-        return word.split('').splice(word.indexOf('1')).join('')
+    const lettersWithout0 = arrayOf10.map(letter => letter.map(letter => {
+        return removeZeros(letter)
     }))
-    const bbb = aaa.map(word => word.map(word => {
-        return word.match(/.{2}/g);
+    const arrayOf2 = lettersWithout0.map(word => word.map(word => {
+        return divide(word, 2)
     }))
-    console.log('bbb', bbb)
-    const ccc = bbb.map(b => b.map(b=> b.map(b => {
+    const arrayInMorse = arrayOf2.map(b => b.map(b=> b.map(b => {
         let newStr = ''
-        if (b === '10') {
-            newStr += '.'
-        }
-        if (b === '11') {
-            newStr += '-'
-        }
+        b === '10' ? newStr += '.' : newStr += '-'
         return newStr
     }).join('')))
-    console.log(ccc)
-    return ccc.map(letter => letter.map(letter => {
+    return arrayInMorse.map(letter => letter.map(letter => {
         for (let i of Object.keys(MORSE_TABLE)) {
             if (i === letter) {
                 return MORSE_TABLE[i]
             }
         }
     }).join('')).join(' ')
+}
+
+function splitToWords(str) {
+    return str.split('**********')
+}
+
+function divide(word, length) {
+    let regexp = new RegExp(`.{${length}}`, 'g')
+    return word.match(regexp)
+}
+
+function removeZeros(letter) {
+    return letter.substring(letter.indexOf('1'))
 }
 
 module.exports = {
