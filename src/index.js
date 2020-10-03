@@ -38,40 +38,43 @@ const MORSE_TABLE = {
 };
 
 function decode(expr) {
-    const arrayOf10 = splitToWords(expr).map(word => {
-        return divide(word, 10)
-    })
-    const lettersWithout0 = arrayOf10.map(letter => letter.map(letter => {
-        return removeZeros(letter)
-    }))
-    const arrayOf2 = lettersWithout0.map(word => word.map(word => {
-        return divide(word, 2)
-    }))
-    const arrayInMorse = arrayOf2.map(b => b.map(b=> b.map(b => {
-        let newStr = ''
-        b === '10' ? newStr += '.' : newStr += '-'
-        return newStr
-    }).join('')))
-    return arrayInMorse.map(letter => letter.map(letter => {
-        for (let i of Object.keys(MORSE_TABLE)) {
-            if (i === letter) {
-                return MORSE_TABLE[i]
-            }
-        }
-    }).join('')).join(' ')
+    const preparedArray = splitToWords(expr)
+                        .map(word => divide(word, 10))
+                        .map(removeZeros)
+                        .map(word => divide(word, 2))
+    const arrayInMorse = preparedArray.map(b => b.map(b=> b.map(transformToMorseCode).join('')))
+    return arrayInMorse.map(letter => letter.map(transformToAlphabet).join('')).join(' ')
 }
 
 function splitToWords(str) {
     return str.split('**********')
 }
 
-function divide(word, length) {
-    let regexp = new RegExp(`.{${length}}`, 'g')
-    return word.match(regexp)
+function divide(input, length) {
+    if (typeof input === 'string') {
+        let regexp = new RegExp(`.{${length}}`, 'g')
+        return input.match(regexp)
+    }
+    return input.map(word => divide(word, length))
 }
 
 function removeZeros(letter) {
-    return letter.substring(letter.indexOf('1'))
+    if (typeof letter === 'string') {
+        return letter.substring(letter.indexOf('1'))
+    }
+    return letter.map(removeZeros)
+}
+
+function transformToMorseCode(symbol) {
+    return symbol === '10' ? '.' : '-';
+}
+
+function transformToAlphabet(code) {
+    for (let i of Object.keys(MORSE_TABLE)) {
+        if (i === code) {
+            return MORSE_TABLE[i]
+        }
+    }
 }
 
 module.exports = {
